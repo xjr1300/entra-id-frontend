@@ -1,41 +1,48 @@
 import {
-  useMsal,
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
-import { loginRequest } from './authConfig';
+import { useSSO } from './hooks/useSSO';
 
-const LoginButton = () => {
-  const { instance } = useMsal();
-  const handleLogin = () => {
-    instance.loginRedirect(loginRequest);
-  };
-
-  return <button onClick={handleLogin}>Login via Microsoft Entra ID</button>;
+interface ButtonProps {
+  onClick: () => Promise<void>;
+}
+const LoginButton = ({ onClick }: ButtonProps) => {
+  return <button onClick={onClick}>Login via Microsoft Entra ID</button>;
 };
 
-const LogoutButton = () => {
-  const { instance } = useMsal();
-  const handleLogout = () => {
-    instance.logoutRedirect({
-      account: instance.getActiveAccount(),
-    });
-  };
-
-  return <button onClick={handleLogout}>Logout</button>;
+const LogoutButton = ({ onClick }: ButtonProps) => {
+  return <button onClick={onClick}>Logout</button>;
 };
+
 const App = () => {
+  const {
+    isCheckingSSO,
+    isLoginInProgress,
+    isAuthenticated,
+    login,
+    logout,
+    error,
+  } = useSSO();
+
   return (
-    <div className="App">
-      <h1>MSAL App</h1>
-      <AuthenticatedTemplate>
-        <div>Login Succeeded</div>
-        <LogoutButton />
-      </AuthenticatedTemplate>
-      <UnauthenticatedTemplate>
-        <LoginButton />
-      </UnauthenticatedTemplate>
-    </div>
+    <>
+      <p>Entra ID SSO Sample</p>
+      {isCheckingSSO && <p>Checking SSO status...</p>}
+      {isLoginInProgress && <p>Login in progress...</p>}
+      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {isAuthenticated ? (
+        <AuthenticatedTemplate>
+          <p>You are logged in!</p>
+          <LogoutButton onClick={logout} />
+        </AuthenticatedTemplate>
+      ) : (
+        <UnauthenticatedTemplate>
+          <p>You are not logged in.</p>
+          <LoginButton onClick={login} />
+        </UnauthenticatedTemplate>
+      )}
+    </>
   );
 };
 
