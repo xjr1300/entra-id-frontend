@@ -5,11 +5,13 @@ import {
 } from '@azure/msal-browser';
 import { useMsal } from '@azure/msal-react';
 import { loginRequest } from '../authConfig.ts';
+import { useAuthenticated } from './useAuthenticated.ts';
+import { useAcquireToken } from './useAcquireToken.ts';
 
 export const useSSO = () => {
-  const { instance, accounts, inProgress } = useMsal();
-  // 認証済みフラグ
-  const isAuthenticated = accounts.length > 0;
+  const { instance, inProgress } = useMsal();
+  const { isAuthenticated, account } = useAuthenticated();
+  const { acquireToken } = useAcquireToken();
   // SSOログイン状態確認中フラグ
   const [isCheckingSSO, setIsCheckingSSO] = useState(true);
   // ログイン処理中フラグ
@@ -30,16 +32,9 @@ export const useSSO = () => {
       // ログインしていない場合はSSOチェックを終了
       if (!isAuthenticated) return;
 
-      // ログインしているアカウントを取得
-      const account = instance.getActiveAccount() ?? accounts[0];
-      if (!account) return;
-
       try {
         // ログインしているアカウントのトークンを取得
-        await instance.acquireTokenSilent({
-          account,
-          ...loginRequest,
-        });
+        await acquireToken(account);
         console.log('SSO Silent Login Succeeded');
       } catch (err) {
         if (err instanceof InteractionRequiredAuthError) {
@@ -59,7 +54,7 @@ export const useSSO = () => {
     return () => {
       cancelled = true;
     };
-  }, [instance, isAuthenticated, inProgress, accounts]);
+  }, [instance, isAuthenticated, inProgress, account, acquireToken]);
 
   // ログイン
   const login = useCallback(async () => {

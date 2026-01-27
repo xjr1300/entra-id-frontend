@@ -2,7 +2,7 @@ import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
-import { useSSO } from './hooks/useSSO';
+import { useSSO } from './hooks';
 
 interface ButtonProps {
   onClick: () => Promise<void>;
