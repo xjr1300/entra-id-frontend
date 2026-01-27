@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useAcquireToken, useAuthenticated } from './index';
+import { useAuthenticated } from './index';
+import { graphApiClient } from '../axios';
 
 // ユーザープロファイル
 export interface GraphUserProfile {
@@ -55,14 +56,13 @@ export const isGraphUserProfile = (obj: unknown): obj is GraphUserProfile => {
 };
 
 export const useUserProfile = () => {
-  const { isAuthenticated, account } = useAuthenticated();
-  const { acquireToken } = useAcquireToken();
+  const { isAuthenticated } = useAuthenticated();
   const [userProfile, setUserProfile] = useState<GraphUserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !account) {
+    if (!isAuthenticated) {
       setUserProfile(null);
       return;
     }
@@ -70,38 +70,29 @@ export const useUserProfile = () => {
     let cancelled = false;
     const fetchUserProfile = async () => {
       setIsLoading(true);
+      setError(null);
+
       try {
-        const accessToken = await acquireToken(account);
-        const response = await fetch(import.meta.env.VITE_GRAPH_ME_ENDPOINT, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (!response.ok) {
-          const errorBody = await response.json();
-          console.error('Failed to fetch user profile:', errorBody);
-          if (!cancelled) {
-            setError(
-              'Microsoft Graph APIからのユーザープロファイルの取得に失敗しました。',
-            );
-          }
-          return;
-        }
-        const data = await response.json();
+        const response = await graphApiClient.get(
+          import.meta.env.VITE_GRAPH_ME_ENDPOINT,
+        );
+        const data = response.data;
         if (!isGraphUserProfile(data)) {
+          console.error('Unexpected user profile format', data);
           if (!cancelled) {
-            console.error('Unexpected user profile format:', data);
             setError(
-              'Microsoft Graph APIから取得したユーザープロファイルの形式を予期できませんでした。',
+              'Microsoft Graph APIから取得したユーザープロファイルの形式が不正です。',
             );
           }
           return;
         }
         setUserProfile(data);
       } catch (err) {
-        console.error('Error fetching user profile:', err);
+        console.error('Failed to fetch user profile', err);
         if (!cancelled) {
-          setError('ユーザープロファイルの取得中にエラーが発生しました。');
+          setError(
+            'Microsoft Graph APIからユーザープロファイルを取得できませんでした。',
+          );
         }
       } finally {
         if (!cancelled) {
@@ -115,7 +106,7 @@ export const useUserProfile = () => {
     return () => {
       cancelled = true;
     };
-  }, [isAuthenticated, account, acquireToken]);
+  }, [isAuthenticated]);
 
   return { userProfile, isLoading, error };
 };

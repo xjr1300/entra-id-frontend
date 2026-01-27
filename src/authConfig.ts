@@ -1,4 +1,4 @@
-import { type Configuration, type PopupRequest } from '@azure/msal-browser';
+import { type Configuration, type SilentRequest } from '@azure/msal-browser';
 
 export const authConfig: Configuration = {
   auth: {
@@ -14,7 +14,7 @@ export const authConfig: Configuration = {
   },
 };
 
-// ログインリクエストのスコープ設定
-export const loginRequest: PopupRequest = {
+// Microsoft Graph APIログインリクエストのスコープ設定
+export const graphLoginRequest: SilentRequest = {
   scopes: ['User.Read'],
 };

@@ -609,6 +609,31 @@ const LogoutButton = ({ onClick }: ButtonProps) =&gt; {
 <p><code>acquireTokenSilent</code>は、キャッシュされたアクセストークンが有効な場合は、そのアクセストークンを返します。<br>
 一方、キャッシュされたアクセストークンが期限切れ、または無効な場合は、内部で再認証フローを実行し、新しいアクセストークンを取得（リフレッシュ）して返します。</p>
 <p>このため、Microsoft Graph APIやバックエンドAPIを呼び出す際は、アクセストークンを保持し続けるのではなく、都度<code>acquireTokenSilent</code>を呼び出してアクセストークンを取得する実装としています。</p>
+<h2 id="entra-id%E3%81%8C%E7%99%BA%E8%A1%8C%E3%81%99%E3%82%8B%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3api%E3%81%94%E3%81%A8%E3%81%AB%E7%99%BA%E8%A1%8C%E3%81%95%E3%82%8C%E3%82%8B%E3%83%88%E3%83%BC%E3%82%AF%E3%83%B3">Entra IDが発行するアクセストークン（APIごとに発行されるトークン）</h2>
+<p>Entra IDが発行するアクセストークンは、リクエスト時に指定したスコープに基づいて、<strong>どのAPI（リソース）を呼び出すためのトークンか</strong>が決定されます。<br>
+その結果、呼び出し対象のAPIごとに異なるアクセストークンが発行されます。</p>
+<p>例えば、Microsoft Graph API用のアクセストークンを取得する場合は、<br>
+Microsoft Graphが定義しているスコープである<code>User.Read</code>を指定します。</p>
+<p>次のコードで発行されるアクセストークンは、<code>aud（Audience）</code>が<code>https://graph.microsoft.com</code>となり、Microsoft Graph API専用のアクセストークンになります。</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">const</span> request = {
+  scopes: [<span class="hljs-string">'User.Read'</span>],
+  account: instance.getActiveAccount(),
+};
+<span class="hljs-keyword">const</span> tokenResponse = <span class="hljs-keyword">await</span> instance.acquireTokenSilent(request);
+<span class="hljs-keyword">const</span> accessToken = tokenResponse.accessToken;
+</div></code></pre>
+<p>一方で、バックエンドAPI用のアクセストークンを取得する場合は、バックエンドAPIとして登録したアプリケーションに対して公開したスコープを指定します。<br>
+スコープは、バックエンドAPIのアプリケーションID URIに基づく形式になります。</p>
+<p>次のコードで発行されるアクセストークンは、<code>aud</code>がバックエンドAPIのアプリケーション（クライアント）IDとなり、そのバックエンドAPI専用のアクセストークンになります。</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// &lt;scope-name&gt; は、access_as_userなど、バックエンドAPIで定義したスコープ名に置き換えます</span>
+<span class="hljs-keyword">const</span> request = {
+  scopes: [<span class="hljs-string">'api://&lt;backend-api-app-client-id&gt;/&lt;scope-name&gt;'</span>],
+  account: instance.getActiveAccount(),
+};
+
+<span class="hljs-keyword">const</span> tokenResponse = <span class="hljs-keyword">await</span> instance.acquireTokenSilent(request);
+<span class="hljs-keyword">const</span> accessToken = tokenResponse.accessToken;
+</div></code></pre>
 
   </body>
 </html>

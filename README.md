@@ -257,3 +257,38 @@ const graphResponse = await fetch(import.meta.env.VITE_GRAPH_ME_ENDPOINT, {
 一方、キャッシュされたアクセストークンが期限切れ、または無効な場合は、内部で再認証フローを実行し、新しいアクセストークンを取得（リフレッシュ）して返します。
 
 このため、Microsoft Graph APIやバックエンドAPIを呼び出す際は、アクセストークンを保持し続けるのではなく、都度`acquireTokenSilent`を呼び出してアクセストークンを取得する実装としています。
+
+## Entra IDが発行するアクセストークン（APIごとに発行されるトークン）
+
+Entra IDが発行するアクセストークンは、リクエスト時に指定したスコープに基づいて、**どのAPI（リソース）を呼び出すためのトークンか**が決定されます。
+その結果、呼び出し対象のAPIごとに異なるアクセストークンが発行されます。
+
+例えば、Microsoft Graph API用のアクセストークンを取得する場合は、
+Microsoft Graphが定義しているスコープである`User.Read`を指定します。
+
+次のコードで発行されるアクセストークンは、`aud（Audience）`が`https://graph.microsoft.com`となり、Microsoft Graph API専用のアクセストークンになります。
+
+```ts
+const request = {
+  scopes: ['User.Read'],
+  account: instance.getActiveAccount(),
+};
+const tokenResponse = await instance.acquireTokenSilent(request);
+const accessToken = tokenResponse.accessToken;
+```
+
+一方で、バックエンドAPI用のアクセストークンを取得する場合は、バックエンドAPIとして登録したアプリケーションに対して公開したスコープを指定します。
+スコープは、バックエンドAPIのアプリケーションID URIに基づく形式になります。
+
+次のコードで発行されるアクセストークンは、`aud`がバックエンドAPIのアプリケーション（クライアント）IDとなり、そのバックエンドAPI専用のアクセストークンになります。
+
+```ts
+// <scope-name> は、access_as_userなど、バックエンドAPIで定義したスコープ名に置き換えます
+const request = {
+  scopes: ['api://<backend-api-app-client-id>/<scope-name>'],
+  account: instance.getActiveAccount(),
+};
+
+const tokenResponse = await instance.acquireTokenSilent(request);
+const accessToken = tokenResponse.accessToken;
+```

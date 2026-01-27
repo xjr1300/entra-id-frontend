@@ -4,7 +4,7 @@ import {
   InteractionStatus,
 } from '@azure/msal-browser';
 import { useMsal } from '@azure/msal-react';
-import { loginRequest } from '../authConfig.ts';
+import { graphLoginRequest } from '../authConfig.ts';
 import { useAuthenticated } from './useAuthenticated.ts';
 import { useAcquireToken } from './useAcquireToken.ts';
 
@@ -37,6 +37,8 @@ export const useSSO = () => {
         await acquireToken(account);
         console.log('SSO Silent Login Succeeded');
       } catch (err) {
+        // トークンを取得する際に例外が発生するのは、ログインしていない場合であり、これは無視して良いため
+        // ログに記録するだけに留める
         if (err instanceof InteractionRequiredAuthError) {
           console.log('SSO Silent Login Failed - Interaction Required: ', err);
         } else {
@@ -60,9 +62,10 @@ export const useSSO = () => {
   const login = useCallback(async () => {
     setIsLoginInProgress(true);
     try {
+      // リダイレクトによりログインページを表示
       await instance.loginRedirect({
         redirectStartPage: window.location.href,
-        ...loginRequest,
+        ...graphLoginRequest,
       });
     } catch (err) {
       console.error('Login Failed', err);
@@ -76,6 +79,7 @@ export const useSSO = () => {
   const logout = useCallback(async () => {
     setIsLogoutInProgress(true);
     try {
+      // リダイレクトによりログアウトページを表示
       await instance.logoutRedirect({
         account: instance.getActiveAccount(),
       });
