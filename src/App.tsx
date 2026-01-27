@@ -3,6 +3,7 @@ import {
   UnauthenticatedTemplate,
 } from '@azure/msal-react';
 import { useSSO } from './hooks';
+import { UserProfile } from './components/UserProfile';
 
 interface ButtonProps {
   onClick: () => Promise<void>;
@@ -34,6 +35,7 @@ const App = () => {
       {isAuthenticated ? (
         <AuthenticatedTemplate>
           <p>You are logged in!</p>
+          <UserProfile />
           <LogoutButton onClick={logout} />
         </AuthenticatedTemplate>
       ) : (
