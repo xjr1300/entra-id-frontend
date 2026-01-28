@@ -553,14 +553,7 @@ const LogoutButton = ({ onClick }: ButtonProps) =&gt; {
 };
 
 <span class="hljs-keyword">const</span> App = <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-  <span class="hljs-keyword">const</span> {
-    isCheckingSSO,
-    isLoginInProgress,
-    isAuthenticated,
-    login,
-    logout,
-    error,
-  } = useSSO();
+  <span class="hljs-keyword">const</span> { isCheckingSSO, isLoginInProgress, login, logout, error } = useSSO();
 
   <span class="hljs-keyword">return</span> (
     &lt;&gt;
@@ -568,18 +561,15 @@ const LogoutButton = ({ onClick }: ButtonProps) =&gt; {
       {isCheckingSSO &amp;&amp; &lt;p&gt;Checking SSO status...&lt;/</span>p&gt;}
       {isLoginInProgress &amp;&amp; &lt;p&gt;Login <span class="hljs-keyword">in</span> progress...&lt;<span class="hljs-regexp">/p&gt;}
       {error &amp;&amp; &lt;p style={{ color: 'red' }}&gt;Error: {error}&lt;/</span>p&gt;}
-      {isAuthenticated ? (
-        &lt;AuthenticatedTemplate&gt;
-          &lt;p&gt;You are logged <span class="hljs-keyword">in</span>!&lt;<span class="hljs-regexp">/p&gt;
-          &lt;UserProfile /</span>&gt;
-          &lt;LogoutButton onClick={logout} /&gt;
-        &lt;<span class="hljs-regexp">/AuthenticatedTemplate&gt;
-      ) : (
-        &lt;UnauthenticatedTemplate&gt;
-          &lt;p&gt;You are not logged in.&lt;/</span>p&gt;
-          &lt;LoginButton onClick={login} /&gt;
-        &lt;<span class="hljs-regexp">/UnauthenticatedTemplate&gt;
-      )}
+      &lt;AuthenticatedTemplate&gt;
+        &lt;p&gt;You are logged <span class="hljs-keyword">in</span>!&lt;<span class="hljs-regexp">/p&gt;
+        &lt;UserProfile /</span>&gt;
+        &lt;LogoutButton onClick={logout} /&gt;
+      &lt;<span class="hljs-regexp">/AuthenticatedTemplate&gt;
+      &lt;UnauthenticatedTemplate&gt;
+        &lt;p&gt;You are not logged in.&lt;/</span>p&gt;
+        &lt;LoginButton onClick={login} /&gt;
+      &lt;<span class="hljs-regexp">/UnauthenticatedTemplate&gt;
     &lt;/</span>&gt;
   );
 };

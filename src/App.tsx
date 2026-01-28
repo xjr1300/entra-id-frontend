@@ -17,14 +17,7 @@ const LogoutButton = ({ onClick }: ButtonProps) => {
 };
 
 const App = () => {
-  const {
-    isCheckingSSO,
-    isLoginInProgress,
-    isAuthenticated,
-    login,
-    logout,
-    error,
-  } = useSSO();
+  const { isCheckingSSO, isLoginInProgress, login, logout, error } = useSSO();
 
   return (
     <>
@@ -32,18 +25,15 @@ const App = () => {
       {isCheckingSSO && <p>Checking SSO status...</p>}
       {isLoginInProgress && <p>Login in progress...</p>}
       {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-      {isAuthenticated ? (
-        <AuthenticatedTemplate>
-          <p>You are logged in!</p>
-          <UserProfile />
-          <LogoutButton onClick={logout} />
-        </AuthenticatedTemplate>
-      ) : (
-        <UnauthenticatedTemplate>
-          <p>You are not logged in.</p>
-          <LoginButton onClick={login} />
-        </UnauthenticatedTemplate>
-      )}
+      <AuthenticatedTemplate>
+        <p>You are logged in!</p>
+        <UserProfile />
+        <LogoutButton onClick={logout} />
+      </AuthenticatedTemplate>
+      <UnauthenticatedTemplate>
+        <p>You are not logged in.</p>
+        <LoginButton onClick={login} />
+      </UnauthenticatedTemplate>
     </>
   );
 };
